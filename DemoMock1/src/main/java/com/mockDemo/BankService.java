@@ -30,4 +30,13 @@ public class BankService {
         repository.updateAccount(account);
         return account.getBalance();
     }
+
+    public double getBalance(int accountId) {
+        BankAccount account = repository.findAccountById(accountId);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
+        return account.getBalance();
+    }
+
 }
