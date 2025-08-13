@@ -142,3 +142,104 @@ CREATE TABLE users (
   email VARCHAR(100)
 );
 
+
+
+//mongo Aggregator
+
+
+db.customers.insertMany([
+  { _id: "C001", name: "Alice", tier: "Gold",   city: "Delhi"  },
+  { _id: "C002", name: "Bob",   tier: "Silver", city: "Mumbai" },
+  { _id: "C003", name: "Carol", tier: "Gold",   city: "Pune"   }
+]);
+
+// 3) Orders (note: each has a date)
+
+db.orders.insertMany([
+  {
+    _id: "O1001",
+    customerId: "C001",
+    orderDate: ISODate("2025-06-02T10:12:00Z"),
+    items: [
+      { sku: "P01", name: "Laptop", qty: 1, price: 85000 },
+      { sku: "P02", name: "Mouse",  qty: 2, price:  800 }
+    ],
+    status: "DELIVERED"
+  },
+  {
+    _id: "O1002",
+    customerId: "C002",
+    orderDate: ISODate("2025-06-15T15:30:00Z"),
+    items: [
+      { sku: "P03", name: "Phone",  qty: 1, price: 45000 },
+      { sku: "P04", name: "Cover",  qty: 1, price:  600 }
+    ],
+    status: "DELIVERED"
+  },
+  {
+    _id: "O1003",
+    customerId: "C001",
+    orderDate: ISODate("2025-06-28T08:45:00Z"),
+    items: [
+      { sku: "P05", name: "Monitor", qty: 2, price: 12000 }
+    ],
+    status: "SHIPPED"
+  },
+  {
+    _id: "O1004",
+    customerId: "C003",
+    orderDate: ISODate("2025-07-03T09:05:00Z"),
+    items: [
+      { sku: "P06", name: "Keyboard", qty: 1, price: 2500 }
+    ],
+    status: "DELIVERED"
+  }
+]);
+
+// (Optional) Helpful indexes for filters/joins
+db.orders.createIndex({ orderDate: 1 });
+db.orders.createIndex({ customerId: 1 });
+
+
+// Revenue by customer
+db.orders.aggregate([
+  { $match: { orderDate: { $gte: ISODate("2025-06-01T00:00:00Z"), $lt: ISODate("2025-07-01T00:00:00Z") } } },
+  { $addFields: {
+      orderTotal: {
+        $sum: {
+          $map: {
+            input: "$items",
+            as: "i",
+            in: { $multiply: ["$$i.qty", "$$i.price"] }
+          }
+        }
+      }
+    }
+  },
+  { $group: {
+      _id: "$customerId",
+      orders: { $sum: 1 },
+      revenue: { $sum: "$orderTotal" }
+    }
+  },
+  { $lookup: {
+      from: "customers",
+      localField: "_id",
+      foreignField: "_id",
+      as: "customer"
+    }
+  },
+  { $unwind: "$customer" },
+  { $project: {
+      _id: 0,
+      customer: "$customer.name",
+      city: "$customer.city",
+      tier: "$customer.tier",
+      orders: 1,
+      revenue: 1
+    }
+  },
+  { $sort: { revenue: -1 } }
+]);
+
+
