@@ -257,5 +257,7 @@ Test with Console Producer
 Test with Console Consumer
 .\bin\windows\kafka-console-consumer.bat --topic demo-topic --from-beginning --bootstrap-server localhost:9092
 
+delete
+.\bin\windows\kafka-topics.bat --bootstrap-server localhost:9092 --delete --topic demo-topic
 
 
