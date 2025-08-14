@@ -243,3 +243,19 @@ db.orders.aggregate([
 ]);
 
 
+
+//kafka:
+
+ Start ZooKeeper
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+Start Kafka Broker
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+Create a Topic
+.\bin\windows\kafka-topics.bat --create --topic demo-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+Test with Console Producer
+.\bin\windows\kafka-console-producer.bat --topic demo-topic --bootstrap-server localhost:9092
+Test with Console Consumer
+.\bin\windows\kafka-console-consumer.bat --topic demo-topic --from-beginning --bootstrap-server localhost:9092
+
+
+
