@@ -260,4 +260,6 @@ Test with Console Consumer
 delete
 .\bin\windows\kafka-topics.bat --bootstrap-server localhost:9092 --delete --topic demo-topic
 
+verify deletion
 
+.\bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
